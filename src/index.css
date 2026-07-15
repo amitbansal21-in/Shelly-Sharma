@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Playfair Display", "Didot", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Custom colors from Hydrangea Palette */
+  --color-rose-pink: #FF8DA1;
+  --color-soft-peach: #FFC2BA;
+  --color-luminous-pink: #FF9CE9;
+  --color-warm-violet: #AD56C4;
+  --color-charcoal-deep: #23152B;
+}
+
+@layer base {
+  body {
+    background-color: #FAFAFA;
+    color: #23152B;
+    font-family: var(--font-sans);
+  }
+}

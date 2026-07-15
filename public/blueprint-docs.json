@@ -1,0 +1,40 @@
+{
+  "academyName": "Shelly Sharma Academy",
+  "domain": "www.shellysharma.co.in",
+  "tagline": "Eloquence & High-Stakes English",
+  "founder": "Shelly Sharma",
+  "location": "India / Remote",
+  "description": "Premium English educational academy focusing on spoken mastery, public speaking, syntax clinic, and IELTS preparation for ambitious students and professionals.",
+  "programs": [
+    {
+      "name": "Elite Spoken English Mastery",
+      "duration": "12 Weeks",
+      "target": "Professionals & Advanced Students",
+      "focus": "Confidence, Accent Polish, Business Presentation, Fluency"
+    },
+    {
+      "name": "Advanced Grammar & Syntax Clinics",
+      "duration": "8 Weeks",
+      "target": "Writers, Academics, Executives",
+      "focus": "Structural Precision, Professional Writing, Semantic Nuances"
+    },
+    {
+      "name": "IELTS Academic/General prep",
+      "duration": "6 Weeks",
+      "target": "Global Aspirants",
+      "focus": "Band 8+ Strategies, Mock Reviews, Speaking/Writing Clinics"
+    }
+  ],
+  "integrations": {
+    "auth": "Firebase Authentication (Google OAuth with popup)",
+    "messaging": "Google Gmail API v1 (users.messages.send)",
+    "recipientEmail": "mail.shelly.sharma@gmail.com"
+  },
+  "seo": {
+    "sitemap": "https://www.shellysharma.co.in/sitemap.xml",
+    "robots": "https://www.shellysharma.co.in/robots.txt",
+    "canonical": "https://www.shellysharma.co.in",
+    "openGraph": "Enabled",
+    "jsonLd": "Enabled"
+  }
+}

@@ -1,0 +1,8 @@
+# Robots.txt for Shelly Sharma Academy
+User-agent: *
+Disallow: /admin
+Disallow: /control-center
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.shellysharma.co.in/sitemap.xml
