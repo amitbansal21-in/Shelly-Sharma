@@ -34,6 +34,72 @@ import { syncLeadToSheets, queueLeadLocally, attachMeetUrlToLead } from "../lib/
 import { triggerChatDemoBooked, triggerChatMeetReady, triggerChatMeetCreated } from "../lib/chat";
 import { downloadCalendarInvite } from "../lib/calendar-ics";
 
+function AnimatedCounter({ value, duration = 1.5, suffix = "" }: { value: string; duration?: number; suffix?: string }) {
+  const [count, setCount] = React.useState(0);
+  const ref = React.useRef<HTMLSpanElement>(null);
+  
+  React.useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+    let animationFrame: number;
+    
+    if (ref.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            const startTime = performance.now();
+            const numericValue = parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
+            
+            const animate = (now: number) => {
+              const progress = Math.min((now - startTime) / (duration * 1000), 1);
+              const easeProgress = 1 - Math.pow(1 - progress, 3); // cubic ease out
+              setCount(Math.floor(easeProgress * numericValue));
+              
+              if (progress < 1) {
+                animationFrame = requestAnimationFrame(animate);
+              } else {
+                setCount(numericValue);
+              }
+            };
+            
+            animationFrame = requestAnimationFrame(animate);
+            if (observer) observer.disconnect();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      
+      observer.observe(ref.current);
+    }
+    
+    return () => {
+      if (observer) observer.disconnect();
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [value, duration]);
+  
+  const formatted = count >= 1000 ? count.toLocaleString() : count;
+  
+  return (
+    <span ref={ref}>
+      {formatted}
+      {suffix}
+    </span>
+  );
+}
+
+function ScrollReveal({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 35 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 interface HomePageProps {
   onNavigateToPage: (page: string) => void;
   onEnrollInCourse: (courseTitle: string) => void;
@@ -617,19 +683,100 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
         </div>
       </section>
 
+      {/* 1.5 Premium Trust Strip */}
+      <section className="relative z-20 -mt-8 mb-4 px-6 lg:px-12 max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="bg-white/90 backdrop-blur-md rounded-[24px] p-6 sm:p-8 shadow-xl shadow-[#AD56C4]/5 border border-[#AD56C4]/10 relative overflow-hidden"
+        >
+          {/* Thin gradient top border */}
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#AD56C4] via-[#FF8DA1] to-[#AD56C4]" />
+          
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="space-y-4 flex-1">
+              <div className="space-y-1">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-[#23152B] tracking-tight">
+                  Trusted by Learners Across India
+                </h3>
+                <p className="text-xs sm:text-sm text-[#23152B]/70 font-medium">
+                  "Helping students, professionals and board aspirants build lifelong English confidence."
+                </p>
+              </div>
+              
+              {/* Location chips */}
+              <div className="flex flex-wrap gap-2.5 pt-1">
+                {[
+                  { name: "Pune", icon: "📍" },
+                  { name: "Mumbai", icon: "📍" },
+                  { name: "Kolkata", icon: "📍" },
+                  { name: "Howrah", icon: "📍" },
+                  { name: "Raipur", icon: "📍" },
+                  { name: "Bilaspur", icon: "📍" },
+                  { name: "Online Across India", icon: "📍" }
+                ].map((loc, i) => (
+                  <motion.div
+                    key={i}
+                    whileHover={{ y: -4, scale: 1.05, boxShadow: "0 10px 15px -3px rgba(173, 86, 196, 0.15), 0 4px 6px -4px rgba(173, 86, 196, 0.15)" }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                    className="inline-flex items-center space-x-1.5 bg-white border border-[#AD56C4]/15 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold text-[#23152B]/80 shadow-sm cursor-default hover:border-[#AD56C4]/30 hover:text-[#AD56C4] transition-all"
+                  >
+                    <span>{loc.icon}</span>
+                    <span>{loc.name}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right side: Subtle animated line */}
+            <div className="flex items-center space-x-3 shrink-0 lg:border-l lg:border-[#AD56C4]/15 lg:pl-8 py-2">
+              <div className="space-y-1 text-left">
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#AD56C4]">
+                    Growing Every Day
+                  </span>
+                  <motion.div
+                    animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  >
+                    <Sparkles size={14} className="text-[#FF8DA1]" fill="currentColor" />
+                  </motion.div>
+                </div>
+                {/* Subtle animated bar */}
+                <div className="h-1 w-24 bg-gradient-to-r from-[#AD56C4] to-[#FF8DA1] rounded-full overflow-hidden relative">
+                  <motion.div
+                    animate={{ x: [-96, 96] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    className="absolute top-0 left-0 w-12 h-full bg-white/40 blur-[2px]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* 2. Key Statistics Banner (Trust Metrics) */}
       <section className="bg-[#23152B] text-white py-12 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
           <div className="space-y-1">
-            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#FF8DA1]">10+ Years</h3>
+            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#FF8DA1]">
+              <AnimatedCounter value="10" suffix="+" /> Years
+            </h3>
             <p className="text-[10px] font-mono tracking-wider uppercase text-white/60 font-semibold">Classroom Experience</p>
           </div>
           <div className="space-y-1 border-l border-white/10">
-            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#AD56C4]">1,000+</h3>
+            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#AD56C4]">
+              <AnimatedCounter value="1000" suffix="+" />
+            </h3>
             <p className="text-[10px] font-mono tracking-wider uppercase text-white/60 font-semibold">Pupils Guided</p>
           </div>
           <div className="space-y-1 border-l border-white/10">
-            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#FF9CE9]">100%</h3>
+            <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-[#FF9CE9]">
+              <AnimatedCounter value="100" suffix="%" />
+            </h3>
             <p className="text-[10px] font-mono tracking-wider uppercase text-white/60 font-semibold">Board Pass Ratio</p>
           </div>
           <div className="space-y-1 border-l border-white/10">
@@ -641,7 +788,8 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
 
       {/* 3. Core Philosophy & Why Choose Shelly */}
       <section className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <ScrollReveal>
+          <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
           <div className="lg:col-span-6 space-y-6">
             <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#AD56C4] px-3 py-1 bg-[#AD56C4]/10 rounded-full">
@@ -711,9 +859,9 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
               </div>
             </div>
           </div>
-
         </div>
-      </section>
+      </ScrollReveal>
+    </section>
 
       {/* NEW SECTION: MEET SHELLY SHARMA */}
       <section className="relative overflow-hidden py-24 bg-gradient-to-tr from-[#FAF7F2] via-[#F3EBF5]/80 to-[#FCEEF2]/80 border-t border-b border-[#AD56C4]/10">
@@ -766,7 +914,8 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
           />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        <ScrollReveal>
+          <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
             {/* LEFT COLUMN: Large Premium Video Player */}
@@ -961,11 +1110,13 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
           </div>
         </div>
 
+        </ScrollReveal>
       </section>
 
       {/* 4. Academy Spotlights */}
       <section className="py-24 bg-gradient-to-b from-[#FAFAFA] to-transparent border-t border-b border-[#AD56C4]/10 relative">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <ScrollReveal>
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
           
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div className="space-y-4 max-w-2xl">
@@ -993,7 +1144,7 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
             {spotlightCourses.map((course) => (
               <div
                 key={course.id}
-                className="bg-white border border-[#AD56C4]/15 rounded-[32px] p-8 hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 flex flex-col justify-between relative group"
+                className="bg-white border border-[#AD56C4]/15 rounded-[32px] p-8 hover:shadow-2xl hover:shadow-[#AD56C4]/10 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between relative group"
               >
                 {course.popular && (
                   <span className="absolute -top-3.5 right-6 bg-gradient-to-r from-[#AD56C4] to-[#FF8DA1] text-white text-[9px] font-mono uppercase font-bold px-3 py-1.5 rounded-full shadow-md tracking-wider flex items-center space-x-1">
@@ -1046,13 +1197,14 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
               </div>
             ))}
           </div>
-
         </div>
-      </section>
+      </ScrollReveal>
+    </section>
 
       {/* 5. Highlighted Student Review */}
       <section className="py-24 bg-white relative">
-        <div className="max-w-5xl mx-auto px-6 relative text-center space-y-8">
+        <ScrollReveal>
+          <div className="max-w-5xl mx-auto px-6 relative text-center space-y-8">
           <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#AD56C4] px-3 py-1 bg-[#AD56C4]/10 rounded-full">
             Social Proof
           </span>
@@ -1146,11 +1298,13 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
             </button>
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* 6. Quick Interactive Assessment Booking card */}
       <section className="py-24 bg-gradient-to-b from-transparent to-[#FFC2BA]/10 border-t border-[#AD56C4]/10 relative">
-        <div className="max-w-4xl mx-auto px-6">
+        <ScrollReveal>
+          <div className="max-w-4xl mx-auto px-6">
           <div className="bg-white border border-[#AD56C4]/15 rounded-[40px] p-8 md:p-12 shadow-xl relative overflow-hidden">
             
             {formSubmitted ? (
@@ -1547,6 +1701,7 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
 
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* Continue the Journey Section */}

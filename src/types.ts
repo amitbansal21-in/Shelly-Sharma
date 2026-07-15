@@ -52,4 +52,5 @@ export interface BlogPostItem {
   description: string;
   date: string;
   content?: string; // Optional detailed content for blog viewer
+  image?: string;
 }

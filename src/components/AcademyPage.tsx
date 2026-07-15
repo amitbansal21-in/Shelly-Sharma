@@ -127,7 +127,7 @@ export default function AcademyPage({ onHomeClick, onEnrollClick, onNavigateToPa
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3 }}
               key={course.id}
-              className="bg-white border border-[#AD56C4]/15 hover:border-[#AD56C4]/35 rounded-[32px] p-8 hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 flex flex-col justify-between relative group"
+              className="bg-white border border-[#AD56C4]/15 hover:border-[#AD56C4]/35 rounded-[32px] p-8 hover:shadow-2xl hover:shadow-[#AD56C4]/10 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between relative group"
             >
               {course.popular && (
                 <span className="absolute -top-3.5 right-6 bg-gradient-to-r from-[#AD56C4] to-[#FF8DA1] text-white text-[9px] font-mono uppercase font-bold px-3 py-1.5 rounded-full shadow-md tracking-wider flex items-center space-x-1 z-10 group-hover:scale-105 transition-transform duration-300">

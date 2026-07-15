@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { motion, useScroll, useSpring } from "motion/react";
 import {
   BookOpen,
@@ -45,6 +45,7 @@ export default function ExperiencePage({
   onNavigateToPage
 }: ExperiencePageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hoveredMilestoneId, setHoveredMilestoneId] = useState<number | null>(null);
 
   // Smooth scroll tracking for path growth animation
   const { scrollYProgress } = useScroll({
@@ -303,9 +304,15 @@ export default function ExperiencePage({
             {milestones.map((item, index) => {
               const isEven = index % 2 === 0;
               const IconComponent = item.icon;
+              const isHovered = hoveredMilestoneId === item.id;
 
               return (
-                <div key={item.id} className="relative">
+                <div
+                  key={item.id}
+                  className="relative"
+                  onMouseEnter={() => setHoveredMilestoneId(item.id)}
+                  onMouseLeave={() => setHoveredMilestoneId(null)}
+                >
                   
                   {/* Grid Layout for Milestone Station */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-4 items-center">
@@ -318,7 +325,11 @@ export default function ExperiencePage({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ duration: 0.7, ease: "easeOut" }}
-                        className="space-y-3"
+                        className={`space-y-3 p-6 sm:p-8 rounded-[32px] border transition-all duration-500 ${
+                          isHovered
+                            ? "bg-white border-[#AD56C4]/25 shadow-xl shadow-[#AD56C4]/5 -translate-y-2"
+                            : "bg-transparent border-transparent"
+                        }`}
                       >
                         {/* Milestone Year Display */}
                         <div className="inline-block">
@@ -381,21 +392,29 @@ export default function ExperiencePage({
                       >
                         {/* Interactive Aura Blur on Node hover */}
                         <div 
-                          className="absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-500 pointer-events-none ${
+                            isHovered ? "opacity-100 scale-125" : "opacity-0"
+                          }`}
                           style={{ backgroundColor: item.glow }}
                         />
 
                         {/* Outer Pulsing Path Circle */}
-                        <div className="w-16 h-16 rounded-full bg-white border border-dashed border-[#AD56C4]/30 flex items-center justify-center p-1.5 shadow-md transform group-hover:scale-105 group-hover:rotate-12 transition-all duration-300">
+                        <div className={`w-16 h-16 rounded-full bg-white border border-dashed transition-all duration-500 flex items-center justify-center p-1.5 shadow-md ${
+                          isHovered ? "border-[#FF8DA1] scale-110 shadow-lg shadow-[#AD56C4]/15" : "border-[#AD56C4]/30"
+                        }`}>
                           
                           {/* Inner Circle displaying custom vector emblem */}
-                          <div className={`w-full h-full rounded-full bg-gradient-to-tr ${item.color} flex items-center justify-center shadow-inner text-white`}>
-                            <IconComponent size={20} className="transform group-hover:scale-110 transition-transform" />
+                          <div className={`w-full h-full rounded-full bg-gradient-to-tr ${item.color} flex items-center justify-center shadow-inner text-white transition-all duration-300 ${
+                            isHovered ? "scale-105" : ""
+                          }`}>
+                            <IconComponent size={20} className={`transform transition-transform duration-500 ${isHovered ? "scale-115 rotate-12" : ""}`} />
                           </div>
                         </div>
 
                         {/* Sequential Index Flag */}
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#23152B] text-white text-[9px] font-mono font-bold flex items-center justify-center shadow">
+                        <div className={`absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[9px] font-mono font-bold flex items-center justify-center shadow transition-all duration-300 ${
+                          isHovered ? "bg-[#AD56C4] scale-110" : "bg-[#23152B]"
+                        }`}>
                           {item.id}
                         </div>
                       </motion.div>

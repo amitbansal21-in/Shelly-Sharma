@@ -108,9 +108,20 @@ export default function BlogPage({ onHomeClick, onNavigateToPage }: BlogPageProp
                     setSelectedPost(post);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className="bg-[#FAFAFA] border border-[#AD56C4]/15 rounded-[32px] p-8 hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                  className="bg-[#FAFAFA] border border-[#AD56C4]/15 rounded-[32px] p-6 hover:shadow-2xl hover:shadow-[#AD56C4]/10 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group cursor-pointer overflow-hidden"
                 >
                   <div className="space-y-4">
+                    {post.image && (
+                      <div className="w-full h-44 overflow-hidden rounded-[20px] relative mb-2">
+                        <img
+                          src={post.image}
+                          alt={post.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#23152B]/20 via-transparent to-transparent pointer-events-none" />
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono tracking-wider text-[#AD56C4] bg-[#AD56C4]/10 px-2.5 py-1 rounded-full uppercase font-bold">
                         {post.category}
@@ -134,9 +145,9 @@ export default function BlogPage({ onHomeClick, onNavigateToPage }: BlogPageProp
                       <Calendar size={12} className="text-[#FF8DA1]" />
                       <span>{post.date}</span>
                     </span>
-                    <span className="text-[#AD56C4] group-hover:translate-x-1 transition-transform duration-300 flex items-center space-x-1 font-bold">
+                    <span className="text-[#AD56C4] flex items-center space-x-1 font-bold">
                       <span>Read Guide</span>
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} className="transform group-hover:translate-x-1.5 transition-transform duration-300" />
                     </span>
                   </div>
                 </article>

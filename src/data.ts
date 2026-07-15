@@ -264,6 +264,7 @@ export const blogPosts: BlogPostItem[] = [
     readTime: "5 min read",
     description: "How to break the habit of saying 'like, um, ah, honestly' during high-stakes presentations by adopting strategic silent pauses.",
     date: "July 2026",
+    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600",
     content: `Filler words like "um," "ah," "like," and "you know" are common coping mechanisms when our speaking pace outruns our brain's phrasing speed. During important business presentations or public speaking, they weaken our authority and dilute the power of our ideas.
 
 To eliminate filler words, Shelly Sharma Academy teaches students a research-backed "Selective Silence" matrix. Rather than treating silence as an awkward void, we teach you to embrace pauses as a high-status oratorical tool:
@@ -280,6 +281,7 @@ Our interactive cohorts practice this dynamic daily using live diagnostic exerci
     readTime: "7 min read",
     description: "A certified examiner's perspective on layout structures, literary quotes, and vocabulary guidelines that score top grades.",
     date: "June 2026",
+    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=600",
     content: `When marking ICSE English literature papers, board examiners seek critical depth, structured paragraphs, and textual evidence. Many capable students fail to cross the 90% threshold because they write a simple plot summary instead of a analytical essay.
 
 To achieve perfect board scores, follow this elite strategy recommended by Shelly Sharma:
@@ -296,6 +298,7 @@ Our specialized K-12 academic coaching programs provide students with Shelly's p
     readTime: "4 min read",
     description: "Stop making subtle errors with collective nouns, compound subjects, and prepositions. Complete grammatical rules explained simply.",
     date: "June 2026",
+    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600",
     content: `Subject-Verb agreement is the cornerstone of elegant, grammatically sound English. While simple singular and plural subjects are easy to match, several complex scenarios consistently trip up students and professionals alike.
 
 Let's deconstruct the three trickiest grammar edge cases:

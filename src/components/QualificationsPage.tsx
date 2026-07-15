@@ -303,7 +303,7 @@ export default function QualificationsPage({ onHomeClick, onContactClick, onNavi
                         {/* Institution Pedigree Badge */}
                         <div className="flex items-center space-x-3.5 py-3 border-y border-[#AD56C4]/5">
                           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center shadow-sm shrink-0`}>
-                            <Icon size={14} />
+                            <Icon size={14} className={`transition-transform duration-300 ${isHovered ? "scale-125 rotate-6" : ""}`} />
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-xs font-bold text-[#23152B] truncate">{item.institution}</h4>

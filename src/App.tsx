@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Shield, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import HomePage from "./components/HomePage";
 import AboutPage from "./components/AboutPage";
 import ExperiencePage from "./components/ExperiencePage";
@@ -17,6 +18,14 @@ export default function App() {
   const [activePage, setActivePage] = useState<string>("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [preselectedProgram, setPreselectedProgram] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Synchronize state with URL pathname on load and popstate
   useEffect(() => {
@@ -203,6 +212,61 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-x-hidden bg-[#FAFAFA] text-[#23152B] selection:bg-[#FF8DA1] selection:text-white font-sans antialiased">
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#23152B] text-white"
+          >
+            <div className="space-y-6 text-center max-w-sm px-6">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: [0.8, 1.05, 1], opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="flex flex-col items-center space-y-4"
+              >
+                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border border-white/20 p-2 shadow-2xl relative">
+                  <img src="/assets/SS Logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                    className="absolute inset-0 rounded-full border-2 border-dashed border-[#FF8DA1]/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="font-display text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-[#FF8DA1] to-white bg-clip-text text-transparent">
+                    Shelly Sharma
+                  </h2>
+                  <p className="text-[10px] font-mono tracking-widest text-[#AD56C4] uppercase font-bold">
+                    Online English Academy
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Elegant Progress bar */}
+              <div className="w-48 h-[3px] bg-white/10 rounded-full overflow-hidden mx-auto relative border border-white/5">
+                <motion.div
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  className="h-full bg-gradient-to-r from-[#AD56C4] to-[#FF8DA1] rounded-full"
+                />
+              </div>
+              
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, times: [0, 0.2, 0.8, 1] }}
+                className="text-[9px] font-mono text-white/50 uppercase tracking-widest"
+              >
+                Curating Pedagogical Excellence...
+              </motion.p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* 1. Sticky Premium Glassmorphism Header */}
       <header className="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-[#AD56C4]/15 transition-all duration-300">
@@ -341,105 +405,117 @@ export default function App() {
       </main>
 
       {/* Luxury Brand Footer */}
-      <footer className="bg-[#23152B] text-white py-16 px-6 lg:px-12 border-t border-white/10 relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16">
+      <footer className="bg-[#23152B] text-white py-16 px-6 lg:px-12 border-t border-white/5 relative overflow-hidden">
+        {/* Absolute top border line with a luxury gradient */}
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#AD56C4] via-[#FF8DA1] to-[#AD56C4]" />
+        
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 relative z-10">
           
           {/* Column 1: Brand Info */}
           <div className="md:col-span-4 space-y-6">
             <button
               onClick={() => navigateToPage("home")}
-              className="flex items-center space-x-2 text-left focus:outline-none"
+              className="flex items-center space-x-2 text-left focus:outline-none group cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-full bg-[#FAF7F2] flex items-center justify-center overflow-hidden border border-white/10 p-1">
+              <div className="w-10 h-10 rounded-full bg-[#FAF7F2] flex items-center justify-center overflow-hidden border border-white/10 p-1.5 transition-transform duration-300 group-hover:scale-110">
                 <img src="/assets/SS Logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
               </div>
-              <span className="font-display text-xl font-bold text-white tracking-tight">Shelly Sharma</span>
+              <div>
+                <span className="font-display text-xl font-bold text-white tracking-tight block transition-colors duration-300 group-hover:text-[#FF8DA1]">Shelly Sharma</span>
+                <span className="block text-[9px] font-mono tracking-widest text-[#AD56C4] uppercase font-bold">Online Academy</span>
+              </div>
             </button>
-            <p className="text-xs text-white/70 leading-relaxed">
+            
+            <p className="text-xs text-white/70 leading-relaxed font-sans">
               University certified English teacher (B.Ed Distinction, M.A. English) with over 10 years of classroom instruction inside India’s premier residential and boarding academies. Developing spoken confidence and academic excellence globally.
             </p>
-            <div className="text-[10px] font-mono text-white/40">
-              <p>Pune, Maharashtra, India</p>
-              <p className="mt-1">Active Hours: 9:00 AM – 7:00 PM IST</p>
+
+            {/* Brand Credentials Seal */}
+            <div className="flex items-center space-x-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl max-w-sm">
+              <div className="w-2 h-2 rounded-full bg-[#FF8DA1] animate-pulse shrink-0" />
+              <span className="text-[10px] font-mono tracking-wider text-white/80">
+                Est. 2016 • Certified Board Examiner • Pune
+              </span>
+            </div>
+
+            <div className="text-[10px] font-mono text-white/40 space-y-1">
+              <p>📍 Maharashtra, India (Active Globally)</p>
+              <p>🕒 Hours: 9:00 AM – 7:00 PM IST (Mon - Sat)</p>
             </div>
           </div>
 
           {/* Column 2: Sitemap Navigation */}
           <div className="md:col-span-2 space-y-4">
-            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1]">Sitemap</h4>
-            <ul className="space-y-2 text-xs text-white/70 font-medium">
-              <li>
-                <button onClick={() => navigateToPage("home")} className="hover:text-white transition-colors cursor-pointer text-left">Academy Home</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("about")} className="hover:text-white transition-colors cursor-pointer text-left">About Shelly</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("experience")} className="hover:text-white transition-colors cursor-pointer text-left">Career Track</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("teaching-philosophy")} className="hover:text-white transition-colors cursor-pointer text-left">Teaching Philosophy</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("qualifications")} className="hover:text-white transition-colors cursor-pointer text-left">Qualifications</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("academy")} className="hover:text-white transition-colors cursor-pointer text-left">Academy Courses</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("blog")} className="hover:text-white transition-colors cursor-pointer text-left">Strategy Blog</button>
-              </li>
-              <li>
-                <button onClick={() => navigateToPage("contact")} className="hover:text-white transition-colors cursor-pointer text-left">Contact Desk</button>
-              </li>
+            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1] border-b border-white/10 pb-2">Sitemap</h4>
+            <ul className="space-y-2.5 text-xs text-white/70 font-medium">
+              {[
+                { label: "Academy Home", target: "home" },
+                { label: "About Shelly", target: "about" },
+                { label: "Career Track", target: "experience" },
+                { label: "Teaching Philosophy", target: "teaching-philosophy" },
+                { label: "Qualifications", target: "qualifications" },
+                { label: "Academy Courses", target: "academy" },
+                { label: "Strategy Blog", target: "blog" },
+                { label: "Contact Desk", target: "contact" }
+              ].map((item, idx) => (
+                <li key={idx}>
+                  <button 
+                    onClick={() => navigateToPage(item.target)} 
+                    className="hover:text-[#FF8DA1] transition-all duration-200 cursor-pointer text-left hover:translate-x-1.5 inline-flex items-center space-x-1"
+                  >
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Column 3: Academy Courses Spotlights */}
           <div className="md:col-span-3 space-y-4">
-            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1]">Academy Programs</h4>
-            <ul className="space-y-2 text-xs text-white/70 font-medium">
-              <li>
-                <button onClick={() => handleEnrollInCourse("Elite Spoken English Mastery")} className="hover:text-white transition-colors cursor-pointer text-left">Elite Spoken English</button>
-              </li>
-              <li>
-                <button onClick={() => handleEnrollInCourse("Advanced Grammar & Syntax Clinics")} className="hover:text-white transition-colors cursor-pointer text-left">Advanced Grammar Clinics</button>
-              </li>
-              <li>
-                <button onClick={() => handleEnrollInCourse("High-Stakes Interview Preparation")} className="hover:text-white transition-colors cursor-pointer text-left">High-Stakes Interviews</button>
-              </li>
-              <li>
-                <button onClick={() => handleEnrollInCourse("ICSE / CBSE Academic Board Prep")} className="hover:text-white transition-colors cursor-pointer text-left">CBSE / ICSE Board Prep</button>
-              </li>
-              <li>
-                <button onClick={() => handleEnrollInCourse("Corporate English & Executive Speech")} className="hover:text-white transition-colors cursor-pointer text-left">Executive Business Speech</button>
-              </li>
+            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1] border-b border-white/10 pb-2">Academy Programs</h4>
+            <ul className="space-y-2.5 text-xs text-white/70 font-medium">
+              {[
+                { label: "Elite Spoken English", name: "Elite Spoken English Mastery" },
+                { label: "Advanced Grammar Clinics", name: "Advanced Grammar & Syntax Clinics" },
+                { label: "High-Stakes Interviews", name: "High-Stakes Interview Preparation" },
+                { label: "CBSE / ICSE Board Prep", name: "ICSE / CBSE Academic Board Prep" },
+                { label: "Executive Business Speech", name: "Corporate English & Executive Speech" }
+              ].map((item, idx) => (
+                <li key={idx}>
+                  <button 
+                    onClick={() => handleEnrollInCourse(item.name)} 
+                    className="hover:text-[#FF8DA1] transition-all duration-200 cursor-pointer text-left hover:translate-x-1.5 inline-flex items-center space-x-1"
+                  >
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Column 4: Newsletter & Security Signatures */}
           <div className="md:col-span-3 space-y-4">
-            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1]">Insights Newsletter</h4>
-            <p className="text-xs text-white/70 leading-relaxed">
+            <h4 className="font-mono text-xs font-bold tracking-wider uppercase text-[#FF8DA1] border-b border-white/10 pb-2">Insights Newsletter</h4>
+            <p className="text-xs text-white/70 leading-relaxed font-sans">
               Subscribe to receive free literature guides, pronunciation worksheets, and batch notifications directly from an educator.
             </p>
             
             {/* Minimal newsletter form */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 pt-1">
               <input
                 type="email"
                 placeholder="Enter email..."
-                className="bg-white/10 border border-white/20 px-3 py-2 rounded-lg text-xs text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-[#FF8DA1] w-full"
+                className="bg-white/10 border border-white/20 px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-[#FF8DA1] w-full"
               />
               <button
                 onClick={() => alert("Thank you for subscribing to our pedagogical newsletter!")}
-                className="px-3 py-2 bg-[#FF8DA1] hover:bg-[#AD56C4] text-white text-xs font-bold rounded-lg transition-colors duration-200 cursor-pointer"
+                className="px-4 py-2.5 bg-[#FF8DA1] hover:bg-[#AD56C4] text-white text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg shrink-0"
               >
                 Join
               </button>
             </div>
             
-            <div className="pt-2 flex items-center space-x-2 text-[9px] font-mono text-white/40 uppercase">
+            <div className="pt-3 flex items-center space-x-2 text-[10px] font-mono text-white/55 uppercase tracking-wider">
               <Sparkles size={12} className="text-[#FF8DA1]" />
               <span>Empowering Spoken Confidence</span>
             </div>
@@ -448,7 +524,7 @@ export default function App() {
         </div>
 
         {/* Legal and Copyright bar */}
-        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50 font-medium">
+        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50 font-medium relative z-10">
           <p>© 2026 Shelly Sharma Online English Academy. All Rights Reserved.</p>
           <div className="flex space-x-6">
             <button onClick={() => navigateToPage("privacy")} className="hover:text-white transition-colors cursor-pointer">
