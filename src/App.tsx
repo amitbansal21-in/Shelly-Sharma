@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X, Shield, Sparkles } from "lucide-react";
 import HomePage from "./components/HomePage";
 import AboutPage from "./components/AboutPage";
 import ExperiencePage from "./components/ExperiencePage";
@@ -440,8 +440,8 @@ export default function App() {
             </div>
             
             <div className="pt-2 flex items-center space-x-2 text-[9px] font-mono text-white/40 uppercase">
-              <Shield size={12} className="text-[#FF8DA1]" />
-              <span>Secure & Privacy Protected</span>
+              <Sparkles size={12} className="text-[#FF8DA1]" />
+              <span>Empowering Spoken Confidence</span>
             </div>
           </div>
 

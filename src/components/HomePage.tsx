@@ -465,7 +465,7 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
             {/* Floating Trust Card Top-Right */}
             <div className="absolute -top-4 -right-2 bg-white/95 border border-[#AD56C4]/20 rounded-2xl py-2.5 px-4 shadow-xl backdrop-blur-md hidden sm:flex items-center space-x-2 animate-bounce-slow">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-[10px] font-mono font-bold tracking-wider text-[#23152B] uppercase">Active Intake • 1-on-1 Slots Open</span>
+              <span className="text-[10px] font-mono font-bold tracking-wider text-[#23152B] uppercase">New Batches Commencing • Enquire Now</span>
             </div>
 
             {/* Floating Card Left */}
