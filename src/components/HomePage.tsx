@@ -16,7 +16,7 @@ import {
   MessageSquare,
   Shield
 } from "lucide-react";
-import shellyImg from "../../assets/Shelly.png";
+import shellyImg from "../../public/assets/Shelly.png";
 import { courses, testimonials } from "../data";
 import {
   initAuth,
