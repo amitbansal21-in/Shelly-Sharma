@@ -38,7 +38,7 @@ A high-performance, responsive web application for **Shelly Sharma Academy**, a 
 ---
 
 ## 🛠️ Technology Stack
-- **Frontend Framework**: [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Frontend Framework**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion (Framer Motion)](https://motion.dev/)
@@ -86,24 +86,53 @@ Ensure you have [Node.js](https://nodejs.org/) (v18+) and `npm` installed.
    npm install
    ```
 
-3. **Configure Environment Variables**
-   Create a `.env` file at the root of the project using `.env.example` as a template:
-   ```env
-   # Google Workspace API Credentials
-   VITE_GOOGLE_CLIENT_ID=your_client_id_here
-   VITE_GOOGLE_API_KEY=your_api_key_here
-   ```
+---
 
-4. **Run Development Server**
+## 💻 Development & Build Scripts
+
+1. **Run Development Server**
    ```bash
    npm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000) inside your browser.
 
-5. **Build for Production**
+2. **Build for Production**
    ```bash
    npm run build
    ```
+
+3. **Code Quality Controls**
+   ```bash
+   npm run lint
+   ```
+
+---
+
+## 🌍 Environment Variables Configuration
+
+Create a `.env` file at the root of the project using `.env.example` as a template:
+```env
+# Google Workspace API Credentials
+VITE_GOOGLE_CLIENT_ID=your_client_id_here
+VITE_GOOGLE_API_KEY=your_api_key_here
+
+# Admin White-listed Emails
+VITE_ADMIN_EMAILS=amitbansal21@gmail.com,mail.shelly.sharma@gmail.com
+```
+
+---
+
+## 🔌 Google Workspace Setup
+1. Enable Sheets, Gmail, Calendar, and Chat APIs in the Google Cloud Console.
+2. Obtain OAuth 2.0 Web Client Credentials and update the JS Authorized Origins to match your production domain.
+3. Configure `VITE_GOOGLE_CLIENT_ID` in your production environments.
+
+---
+
+## 🛠️ Admin Control Center Guide
+The Admin Panel is fully accessible via `/control-center`. 
+- Log in securely via Google Account authentication.
+- Access the **CRM Lead Management**, **Google API Sync Checks**, and **Meeting Generation** blocks.
 
 ---
 
@@ -112,6 +141,13 @@ Ensure you have [Node.js](https://nodejs.org/) (v18+) and `npm` installed.
 - **Accessibility Friendly**: Complete keyboard tab focus management, semantic ARIA roles, and high-contrast color balances.
 - **Highly Secure**: Fortified with client-side Content Security Policy (CSP) headers protecting from script injects and XSS.
 - **Optimized Performance**: DNS Prefetch, Font Preconnects, and preloaded Critical Hero Graphics ensure strong Core Web Vitals (FCP/LCP) scores.
+
+---
+
+## 📞 Support & Maintenance
+For system support, updates, or maintenance queries:
+- **Project Lead**: Amit Bansal ([amitbansal21@gmail.com](mailto:amitbansal21@gmail.com))
+- **Primary Educator**: Shelly Sharma ([mail.shelly.sharma@gmail.com](mailto:mail.shelly.sharma@gmail.com))
 
 ---
 
