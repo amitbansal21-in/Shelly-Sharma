@@ -767,10 +767,10 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
                   <div className="p-4 bg-[#AD56C4]/5 border border-[#AD56C4]/10 rounded-xl space-y-2">
                     <div className="flex items-center space-x-2 text-[#AD56C4]">
                       <Shield size={14} className="text-[#FF8DA1]" />
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider">Secure Gmail Verification</span>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider">Automated Booking Confirmation</span>
                     </div>
                     <p className="text-[11px] text-[#23152B]/75 leading-relaxed">
-                      To send your confirmation email instantly, we will request you to securely authorize with your Google account on submission.
+                      Your complimentary diagnostic invitation and Google Meet details will be synchronized directly to your email inbox on submission.
                     </p>
                   </div>
                 )}

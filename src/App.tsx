@@ -441,7 +441,7 @@ export default function App() {
             
             <div className="pt-2 flex items-center space-x-2 text-[9px] font-mono text-white/40 uppercase">
               <Shield size={12} className="text-[#FF8DA1]" />
-              <span>TLS Encrypted & Spam Protected</span>
+              <span>Secure & Privacy Protected</span>
             </div>
           </div>
 
