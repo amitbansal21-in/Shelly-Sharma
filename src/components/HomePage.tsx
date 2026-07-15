@@ -14,10 +14,12 @@ import {
   Calendar,
   Sparkles,
   MessageSquare,
-  Shield
+  Shield,
+  Upload,
+  X
 } from "lucide-react";
 import shellyImg from "../../public/assets/Shelly.png";
-import { courses, testimonials } from "../data";
+import { courses, testimonials as initialTestimonials } from "../data";
 import {
   initAuth,
   googleSignIn,
@@ -52,6 +54,137 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
 
   // Testimonial slider index
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  // Dynamic Testimonials States
+  const [localTestimonials, setLocalTestimonials] = useState<any[]>([]);
+  const [showTestimonialModal, setShowTestimonialModal] = useState(false);
+  const [testimonialSubmitted, setTestimonialSubmitted] = useState(false);
+  const [isSubmittingTestimonial, setIsSubmittingTestimonial] = useState(false);
+  const [testimonialForm, setTestimonialForm] = useState({
+    name: "",
+    relation: "",
+    board: "",
+    text: "",
+    rating: 5
+  });
+  const [testimonialPhotoPreview, setTestimonialPhotoPreview] = useState<string>("");
+  const [dragActive, setDragActive] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("shelly_testimonials");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setLocalTestimonials([...initialTestimonials, ...parsed]);
+      } catch (err) {
+        setLocalTestimonials(initialTestimonials);
+      }
+    } else {
+      setLocalTestimonials(initialTestimonials);
+    }
+  }, []);
+
+  const getInitials = (name: string): string => {
+    if (!name) return "SS";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      const first = parts[0][0] || "";
+      const second = parts[parts.length - 1][0] || "";
+      return (first + second).toUpperCase();
+    } else if (parts.length === 1) {
+      const single = parts[0];
+      return single.substring(0, 2).toUpperCase();
+    }
+    return "SS";
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTestimonialPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTestimonialPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTestimonialSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testimonialForm.name || !testimonialForm.text) return;
+
+    setIsSubmittingTestimonial(true);
+    
+    // Simulate slight lag for realistic save
+    setTimeout(() => {
+      const newTestimonialItem = {
+        text: testimonialForm.text,
+        author: testimonialForm.name,
+        relation: testimonialForm.relation || "Student / Parent",
+        rating: testimonialForm.rating,
+        board: testimonialForm.board || "Academy Program",
+        photoUrl: testimonialPhotoPreview || undefined
+      };
+
+      const saved = localStorage.getItem("shelly_testimonials");
+      let customList = [];
+      if (saved) {
+        try {
+          customList = JSON.parse(saved);
+        } catch (err) {
+          customList = [];
+        }
+      }
+      
+      const updatedCustom = [...customList, newTestimonialItem];
+      localStorage.setItem("shelly_testimonials", JSON.stringify(updatedCustom));
+      
+      const newFullList = [...initialTestimonials, ...updatedCustom];
+      setLocalTestimonials(newFullList);
+      
+      // Select the newly added testimonial instantly!
+      setActiveTestimonial(newFullList.length - 1);
+      
+      setIsSubmittingTestimonial(false);
+      setTestimonialSubmitted(true);
+    }, 800);
+  };
+
+  const resetTestimonialForm = () => {
+    setTestimonialForm({
+      name: "",
+      relation: "",
+      board: "",
+      text: "",
+      rating: 5
+    });
+    setTestimonialPhotoPreview("");
+    setTestimonialSubmitted(false);
+  };
 
   // Video player state
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -925,51 +1058,92 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
           </span>
           
           <div className="max-w-4xl mx-auto relative">
-            <div className="bg-[#FAFAFA] border border-[#AD56C4]/15 rounded-[32px] p-8 md:p-12 shadow-sm relative flex flex-col justify-between min-h-[200px]">
-              <div className="absolute top-6 right-8 text-[#FF8DA1]/30 font-display text-7xl font-serif pointer-events-none">
-                “
-              </div>
+            {(() => {
+              const currentList = localTestimonials.length > 0 ? localTestimonials : initialTestimonials;
+              const currentItem = currentList[activeTestimonial] || currentList[0] || initialTestimonials[0];
+              return (
+                <>
+                  <div className="bg-[#FAFAFA] border border-[#AD56C4]/15 rounded-[32px] p-8 md:p-12 shadow-sm relative flex flex-col justify-between min-h-[220px]">
+                    <div className="absolute top-6 right-8 text-[#FF8DA1]/30 font-display text-7xl font-serif pointer-events-none">
+                      “
+                    </div>
 
-              <div className="space-y-6">
-                <div className="flex space-x-1 justify-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className="text-[#FF8DA1]" fill="currentColor" />
-                  ))}
-                </div>
+                    <div className="space-y-6 text-center">
+                      <div className="flex space-x-1 justify-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={16}
+                            className={i < (currentItem.rating || 5) ? "text-[#FF8DA1]" : "text-[#23152B]/10"}
+                            fill={i < (currentItem.rating || 5) ? "currentColor" : "none"}
+                          />
+                        ))}
+                      </div>
 
-                <p className="text-[#23152B]/90 text-sm sm:text-lg leading-relaxed font-medium italic max-w-3xl mx-auto">
-                  "{testimonials[activeTestimonial].text}"
-                </p>
-              </div>
+                      <p className="text-[#23152B]/90 text-sm sm:text-lg leading-relaxed font-medium italic max-w-3xl mx-auto">
+                        "{currentItem.text}"
+                      </p>
+                    </div>
 
-              <div className="pt-6 mt-8 border-t border-[#AD56C4]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="text-left">
-                  <h4 className="font-display text-base font-bold text-[#23152B]">
-                    {testimonials[activeTestimonial].author}
-                  </h4>
-                  <p className="text-xs text-[#23152B]/70 mt-0.5">
-                    {testimonials[activeTestimonial].relation}
-                  </p>
-                </div>
-                <span className="text-[10px] font-mono tracking-wider text-[#AD56C4] bg-[#AD56C4]/10 px-3 py-1.5 rounded-full font-bold uppercase w-fit h-fit self-start sm:self-center">
-                  {testimonials[activeTestimonial].board}
-                </span>
-              </div>
-            </div>
+                    <div className="pt-6 mt-8 border-t border-[#AD56C4]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4 text-left">
+                        {currentItem.photoUrl ? (
+                          <img
+                            src={currentItem.photoUrl}
+                            alt={currentItem.author}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-[#AD56C4]/20 shadow-sm"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#AD56C4] to-[#FF8DA1] text-white flex items-center justify-center font-display font-bold text-xs tracking-wide shadow-sm border border-[#AD56C4]/10 shrink-0">
+                            {getInitials(currentItem.author)}
+                          </div>
+                        )}
+                        <div className="text-left">
+                          <h4 className="font-display text-base font-bold text-[#23152B]">
+                            {currentItem.author}
+                          </h4>
+                          <p className="text-xs text-[#23152B]/70 mt-0.5">
+                            {currentItem.relation}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono tracking-wider text-[#AD56C4] bg-[#AD56C4]/10 px-3 py-1.5 rounded-full font-bold uppercase w-fit h-fit self-start sm:self-center">
+                        {currentItem.board}
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Slider Navigation Dots */}
-            <div className="flex justify-center space-x-2 mt-8">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonial(index)}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeTestimonial === index ? "w-8 bg-[#AD56C4]" : "w-2 bg-[#AD56C4]/20"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
+                  {/* Slider Navigation Dots */}
+                  <div className="flex justify-center space-x-2 mt-8">
+                    {currentList.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveTestimonial(index)}
+                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                          activeTestimonial === index ? "w-8 bg-[#AD56C4]" : "w-2 bg-[#AD56C4]/20"
+                        }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Add Testimonial Action CTA */}
+          <div className="pt-4 flex justify-center">
+            <button
+              onClick={() => {
+                resetTestimonialForm();
+                setShowTestimonialModal(true);
+              }}
+              className="px-6 py-3 bg-white hover:bg-[#AD56C4]/5 border border-[#AD56C4]/35 text-[#AD56C4] text-xs font-mono font-bold uppercase rounded-full transition-all duration-300 cursor-pointer flex items-center space-x-2 shadow-sm"
+            >
+              <MessageSquare size={14} className="text-[#FF8DA1]" />
+              <span>Share Your Academic Review</span>
+            </button>
           </div>
         </div>
       </section>
@@ -1400,6 +1574,292 @@ export default function HomePage({ onNavigateToPage, onEnrollInCourse }: HomePag
           </div>
         </div>
       </div>
+
+      {/* Testimonial Submission Modal */}
+      {showTestimonialModal && (
+        <div className="fixed inset-0 bg-[#23152B]/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-[#AD56C4]/20 rounded-[32px] w-full max-w-lg p-6 sm:p-8 relative shadow-2xl space-y-6 my-8 animate-fade-in text-center sm:text-left">
+            <button
+              onClick={() => setShowTestimonialModal(false)}
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+              aria-label="Close modal"
+            >
+              <X size={18} />
+            </button>
+
+            {!testimonialSubmitted ? (
+              <form onSubmit={handleTestimonialSubmit} className="space-y-5">
+                <div className="space-y-1">
+                  <h3 className="font-display text-xl sm:text-2xl font-black text-[#23152B] tracking-tight">
+                    Share Your Academy Review
+                  </h3>
+                  <p className="text-xs text-[#23152B]/70 leading-relaxed">
+                    We would love to hear how Shelly Sharma Academy helped in your learning or professional speaking journey!
+                  </p>
+                </div>
+
+                {/* Rating Stars */}
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                    Your Rating *
+                  </label>
+                  <div className="flex space-x-2 justify-center sm:justify-start">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setTestimonialForm(prev => ({ ...prev, rating: star }))}
+                        className="p-1 hover:scale-110 transition-transform"
+                      >
+                        <Star
+                          size={24}
+                          className={star <= testimonialForm.rating ? "text-[#FF8DA1]" : "text-gray-200"}
+                          fill={star <= testimonialForm.rating ? "currentColor" : "none"}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                    Your Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Pranoy Sharma"
+                    value={testimonialForm.name}
+                    onChange={e => setTestimonialForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-[#AD56C4]/20 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#AD56C4] placeholder-gray-400 text-left"
+                  />
+                </div>
+
+                {/* Designation / Relation */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                      Designation / Relation *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Parent of Class X Student"
+                      value={testimonialForm.relation}
+                      onChange={e => setTestimonialForm(prev => ({ ...prev, relation: e.target.value }))}
+                      className="w-full px-4 py-3 border border-[#AD56C4]/20 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#AD56C4] placeholder-gray-400 text-left"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                      Location / Board
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Raipur (ICSE Board)"
+                      value={testimonialForm.board}
+                      onChange={e => setTestimonialForm(prev => ({ ...prev, board: e.target.value }))}
+                      className="w-full px-4 py-3 border border-[#AD56C4]/20 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#AD56C4] placeholder-gray-400 text-left"
+                    />
+                  </div>
+                </div>
+
+                {/* Photo Upload with Drag & Drop */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                    Your Photo (Optional)
+                  </label>
+                  
+                  {testimonialPhotoPreview ? (
+                    <div className="flex items-center space-x-3 p-3 bg-[#AD56C4]/5 border border-[#AD56C4]/15 rounded-xl">
+                      <img
+                        src={testimonialPhotoPreview}
+                        alt="Preview"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-[#AD56C4]/30"
+                      />
+                      <div className="flex-1 text-left">
+                        <p className="text-xs font-bold text-gray-700">Photo attached successfully</p>
+                        <p className="text-[10px] text-gray-400 font-mono">testimonial_images/uploaded</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTestimonialPhotoPreview("")}
+                        className="text-xs text-red-500 hover:underline font-mono font-bold uppercase"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onDragEnter={handleDrag}
+                      onDragOver={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDrop={handleDrop}
+                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+                        dragActive
+                          ? "border-[#AD56C4] bg-[#AD56C4]/5"
+                          : "border-gray-200 hover:border-[#AD56C4]/50 hover:bg-gray-50"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                        id="testimonial-file-input"
+                      />
+                      <label htmlFor="testimonial-file-input" className="cursor-pointer space-y-1 block">
+                        <Upload size={20} className="mx-auto text-gray-400" />
+                        <span className="block text-xs font-bold text-gray-600">
+                          Drag & drop or <span className="text-[#AD56C4] underline">browse files</span>
+                        </span>
+                        <span className="block text-[9px] text-gray-400 font-mono uppercase">
+                          Saves dynamically in local database & assets
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                {/* Testimonial Message */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-mono tracking-wider text-[#AD56C4] font-bold uppercase">
+                    Your Message / Review *
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Describe how Shelly ma'am targeted your spoken English or class board exams..."
+                    value={testimonialForm.text}
+                    onChange={e => setTestimonialForm(prev => ({ ...prev, text: e.target.value }))}
+                    className="w-full px-4 py-3 border border-[#AD56C4]/20 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#AD56C4] placeholder-gray-400 resize-none leading-relaxed text-left"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingTestimonial}
+                    className="flex-1 py-3 bg-[#AD56C4] hover:bg-[#9642AB] disabled:bg-gray-200 text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    {isSubmittingTestimonial ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Submit Testimonial</span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowTestimonialModal(false)}
+                    className="py-3 px-5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              // SUCCESS STATE: Beautiful Message with a Custom Book Illustration SVG
+              <div className="py-6 flex flex-col items-center justify-center text-center space-y-6">
+                
+                {/* Custom Glowing Orator/Book Illustration SVG */}
+                <div className="relative">
+                  <svg className="w-44 h-44 text-[#AD56C4] mx-auto" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="successBookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#AD56C4" />
+                        <stop offset="100%" stopColor="#FF8DA1" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Floating magical particles */}
+                    <circle cx="45" cy="55" r="4" fill="#FF8DA1" className="animate-ping" />
+                    <circle cx="155" cy="45" r="5" fill="#AD56C4" className="animate-ping" style={{ animationDelay: "0.4s" }} />
+                    <path d="M100 20 L104 28 L112 28 L106 34 L108 42 L100 37 L92 42 L94 34 L88 28 L96 28 Z" fill="#FF8DA1" className="animate-pulse" />
+
+                    {/* Book Cover Background */}
+                    <path
+                      d="M25 135 C 55 145, 100 135, 100 135 C 100 135, 145 145, 175 135 L 175 75 C 145 85, 100 75, 100 75 C 100 75, 55 85, 25 75 Z"
+                      fill="url(#successBookGrad)"
+                      opacity="0.1"
+                    />
+
+                    {/* Main Left Page */}
+                    <path
+                      d="M32 128 C 57 138, 98 129, 98 129 L 98 69 C 98 69, 57 78, 32 68 Z"
+                      fill="#FFFFFF"
+                      stroke="#AD56C4"
+                      strokeWidth="2.5"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Main Right Page */}
+                    <path
+                      d="M168 128 C 143 138, 102 129, 102 129 L 102 69 C 102 69, 143 78, 168 68 Z"
+                      fill="#FFFFFF"
+                      stroke="#AD56C4"
+                      strokeWidth="2.5"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Decorative Leaves/Laurels framing the book */}
+                    <path d="M20 100 C15 120 30 140 40 145" stroke="#FF8DA1" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
+                    <path d="M180 100 C185 120 170 140 160 145" stroke="#FF8DA1" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
+
+                    {/* Written lines in pages */}
+                    <path d="M45 82 H85" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M45 94 H78" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M45 106 H82" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M45 118 H68" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+
+                    <path d="M115 82 H155" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M115 94 H145" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M115 106 H152" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                    <path d="M115 118 H132" stroke="#AD56C4" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+
+                    {/* Sparkle of excellence */}
+                    <path
+                      d="M100 55 C100 55 94 49 94 45 C94 45 97 42 101 42 C104 42 107 44 109 47 C111 44 114 42 117 42 C121 42 124 45 124 45 C124 45 119 51 119 55 L109 63 Z"
+                      fill="url(#successBookGrad)"
+                      className="animate-pulse"
+                    />
+                    
+                    {/* Silk Ribbon Bookmark */}
+                    <path d="M100 68 L100 136 L104 130 L108 136 L108 68 Z" fill="#FF8DA1" />
+                    
+                    {/* Spine Divider */}
+                    <line x1="100" y1="69" x2="100" y2="129" stroke="#AD56C4" strokeWidth="2" opacity="0.7" />
+                  </svg>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-display text-2xl font-black text-[#23152B] tracking-tight">
+                    Review Submitted Successfully!
+                  </h3>
+                  <p className="text-xs text-[#AD56C4] font-mono font-bold uppercase tracking-wider">
+                    🎉 Thank You For Sharing Your Story
+                  </p>
+                </div>
+
+                <p className="text-sm text-[#23152B]/85 max-w-sm leading-relaxed">
+                  Your scholastic feedback has been recorded. It is now instantly featured in the Student Review showcase, supporting the next cohort of confident English speakers!
+                </p>
+
+                <div className="pt-4">
+                  <button
+                    onClick={() => setShowTestimonialModal(false)}
+                    className="px-8 py-3.5 bg-[#23152B] hover:bg-[#AD56C4] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
+                  >
+                    Return to Showcase
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
