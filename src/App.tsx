@@ -14,6 +14,53 @@ import NotFoundPage from "./components/NotFoundPage";
 import TeachingPhilosophyPage from "./components/TeachingPhilosophyPage";
 import ControlCenterPage from "./components/ControlCenterPage";
 
+const PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  home: {
+    title: "Shelly Sharma Academy | Spoken English & Oratory Mentor",
+    description: "Transform hesitation into high-stakes eloquence. Premium spoken English, IELTS prep, and advanced syntax clinics from Chief Mentor Shelly Sharma."
+  },
+  about: {
+    title: "About Shelly Sharma | Founder & Elite English Educator",
+    description: "Meet Shelly Sharma, an elite English mentor with a 10+ year pedigree from prestigious convents. Learn her personal teaching philosophy and credentials."
+  },
+  experience: {
+    title: "Shelly Sharma's Experience | 10+ Years in Elite Schools",
+    description: "Discover Shelly Sharma's extensive tenure at premier institutions like N.H. Goel and Kaanger Valley, guiding 1,000+ pupils to board-level academic mastery."
+  },
+  "teaching-philosophy": {
+    title: "Our Teaching Philosophy | LSRW English Learning Model",
+    description: "Explore our research-backed LSRW method focusing on Listening, Speaking, Reading, and Writing to build lasting spoken confidence and academic fluency."
+  },
+  qualifications: {
+    title: "Shelly Sharma Credentials | B.Ed & B.A. Honours Degree",
+    description: "View Shelly Sharma's certified credentials, including B.Ed and B.A. English Honours, validating her professional academic expertise as a master educator."
+  },
+  academy: {
+    title: "Academy Programs | Spoken English & Syntax Masterclass",
+    description: "Explore our premium academic courses: Elite Spoken Mastery, Advanced Grammar Clinics, and High-Stakes Interview Preparation designed for ambitious minds."
+  },
+  blog: {
+    title: "English Mastery Insights | Spoken English & IELTS Tips",
+    description: "Read actionable articles on public speaking, syntax precision, IELTS strategies, and fluent communication habits written by expert mentor Shelly Sharma."
+  },
+  contact: {
+    title: "Book English Assessment | Contact Shelly Sharma Academy",
+    description: "Schedule your offline spoken English assessment. Connect with Shelly Sharma Academy for admissions, enrollment, and customized corporate workshops."
+  },
+  privacy: {
+    title: "Privacy Protocols & Policies | Shelly Sharma Academy",
+    description: "Review the privacy protocols, data security practices, and compliance guidelines established by Shelly Sharma Academy to protect user information."
+  },
+  terms: {
+    title: "Terms of Service & Conditions | Shelly Sharma Academy",
+    description: "Understand the terms and conditions governing enrollment, class policies, academic schedules, and code of conduct at Shelly Sharma Academy."
+  },
+  admin: {
+    title: "Control Center Console | Shelly Sharma Academy",
+    description: "Secure administration cockpit for real-time lead management, synchronization, and communication system logs at Shelly Sharma Academy."
+  }
+};
+
 export default function App() {
   const [activePage, setActivePage] = useState<string>("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,6 +118,42 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setMobileMenuOpen(false);
+
+    // Dynamic Title & Description Metadata Updates for On-Page SEO
+    const metadata = PAGE_METADATA[activePage] || PAGE_METADATA["home"];
+    document.title = metadata.title;
+
+    // Update Meta Description
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", metadata.description);
+    }
+
+    // Update Open Graph Metadata
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", metadata.title);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", metadata.description);
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) {
+      const path = activePage === "home" ? "" : activePage;
+      ogUrl.setAttribute("content", `https://www.shellysharma.co.in/${path}`);
+    }
+
+    // Update Twitter Metadata
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute("content", metadata.title);
+
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDesc) twitterDesc.setAttribute("content", metadata.description);
+
+    const twitterUrl = document.querySelector('meta[name="twitter:url"]');
+    if (twitterUrl) {
+      const path = activePage === "home" ? "" : activePage;
+      twitterUrl.setAttribute("content", `https://www.shellysharma.co.in/${path}`);
+    }
 
     // Robots and Canonical handling
     if (activePage === "admin") {
