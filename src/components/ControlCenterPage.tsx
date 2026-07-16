@@ -1198,7 +1198,7 @@ export default function ControlCenterPage({ onHomeClick }: { onHomeClick: () => 
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#AD56C4] to-[#FF8DA1] flex items-center justify-center shadow-lg p-1.5 mb-6">
               <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center p-2.5">
-                <img src="/assets/SS Logo.png" alt="SS Academy logo" className="w-full h-full object-contain filter invert brightness-200" />
+                <img src="/assets/ss_logo.png" alt="SS Academy logo" className="w-full h-full object-contain filter invert brightness-200" />
               </div>
             </div>
 
@@ -1317,7 +1317,7 @@ export default function ControlCenterPage({ onHomeClick }: { onHomeClick: () => 
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#AD56C4] to-[#FF8DA1] flex items-center justify-center shadow-lg p-1">
             <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center p-1.5">
-              <img src="/assets/SS Logo.png" alt="Academy Logo" className="w-full h-full object-contain filter invert brightness-200" />
+              <img src="/assets/ss_logo.png" alt="Academy Logo" className="w-full h-full object-contain filter invert brightness-200" />
             </div>
           </div>
           <div>
@@ -2357,7 +2357,7 @@ export default function ControlCenterPage({ onHomeClick }: { onHomeClick: () => 
 
               {/* Direct Resume download links */}
               <a
-                href="/assets/SS Logo.png"
+                href="/assets/ss_logo.png"
                 download="Shelly_Sharma_Academy_Bio.png"
                 className={`w-full py-2 px-3 text-xs font-bold rounded-xl text-left flex items-center justify-between transition-all ${
                   darkMode ? "bg-slate-900 hover:bg-slate-800 text-slate-200" : "bg-slate-50 hover:bg-slate-100 text-slate-700"

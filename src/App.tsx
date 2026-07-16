@@ -228,7 +228,7 @@ export default function App() {
                 className="flex flex-col items-center space-y-4"
               >
                 <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border border-white/20 p-2 shadow-2xl relative">
-                  <img src="/assets/SS Logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
+                  <img src="/assets/ss_logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
@@ -278,7 +278,7 @@ export default function App() {
             onClick={() => navigateToPage("home")}
           >
             <div className="w-10 h-10 rounded-full bg-[#FAF7F2] flex items-center justify-center shadow-md overflow-hidden border border-[#AD56C4]/20 p-1">
-              <img src="/assets/SS Logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
+              <img src="/assets/ss_logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <span className="font-display text-xl font-bold tracking-tight text-[#23152B] hover:text-[#AD56C4] transition-colors duration-300">
@@ -418,7 +418,7 @@ export default function App() {
               className="flex items-center space-x-2 text-left focus:outline-none group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-full bg-[#FAF7F2] flex items-center justify-center overflow-hidden border border-white/10 p-1.5 transition-transform duration-300 group-hover:scale-110">
-                <img src="/assets/SS Logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
+                <img src="/assets/ss_logo.png" alt="Shelly Sharma Academy Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="font-display text-xl font-bold text-white tracking-tight block transition-colors duration-300 group-hover:text-[#FF8DA1]">Shelly Sharma</span>
