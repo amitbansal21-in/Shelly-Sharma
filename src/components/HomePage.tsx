@@ -19,7 +19,7 @@ import {
   X,
   Mail
 } from "lucide-react";
-import shellyImg from "../../public/assets/shelly.png";
+const shellyImg = "/assets/shelly.png";
 import { courses, testimonials as initialTestimonials } from "../data";
 import {
   initAuth,
