@@ -28,7 +28,7 @@
   "integrations": {
     "auth": "Firebase Authentication (Google OAuth with popup)",
     "messaging": "Google Gmail API v1 (users.messages.send)",
-    "recipientEmail": "mail.shelly.sharma@gmail.com"
+    "recipientEmail": "shellysharmamail@gmail.com"
   },
   "seo": {
     "sitemap": "https://www.shellysharma.co.in/sitemap.xml",

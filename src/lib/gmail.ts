@@ -25,6 +25,11 @@ export interface AssessmentData {
   phone: string;
   program: string;
   message: string;
+  parentName?: string;
+  remarks?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  otherQuery?: string;
 }
 
 // In-memory cache for the access token
@@ -108,7 +113,8 @@ function buildMimeMessage(
   fromName: string,
   fromEmail: string,
   subject: string,
-  htmlBody: string
+  htmlBody: string,
+  isHighPriority = false
 ): string {
   const boundary = "boundary_" + Math.random().toString(36).substring(2);
   const subjectEncoded = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
@@ -119,6 +125,11 @@ function buildMimeMessage(
     `To: ${to}`,
     fromHeader,
     `Subject: ${subjectEncoded}`,
+    ...(isHighPriority ? [
+      "X-Priority: 1 (Highest)",
+      "Priority: Urgent",
+      "Importance: High"
+    ] : []),
     "MIME-Version: 1.0",
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
@@ -144,7 +155,10 @@ export async function sendGmailEmails(
   }
 ): Promise<boolean> {
   const visitorEmail = data.email;
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "mail.shelly.sharma@gmail.com";
+  const isOtherQuestion = data.program === "Others";
+  const adminEmail = isOtherQuestion 
+    ? "shellysharmamail@gmail.com" 
+    : (import.meta.env.VITE_ADMIN_EMAIL || "shellysharmamail@gmail.com");
 
   // Capture user-agent and metadata
   const userAgent = navigator.userAgent;
@@ -160,10 +174,10 @@ export async function sendGmailEmails(
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid rgba(173,86,196,0.15); border-radius: 24px; background-color: #FAF7F2; color: #23152B;">
   <div style="text-align: center; margin-bottom: 24px; border-bottom: 2px solid #AD56C4; padding-bottom: 16px;">
     <h2 style="margin: 0; font-family: Georgia, serif; color: #23152B; font-size: 24px;">Shelly Sharma Academy</h2>
-    <span style="font-family: monospace; font-size: 10px; letter-spacing: 2px; color: #AD56C4; text-transform: uppercase; font-weight: bold;">New Assessment Booking</span>
+    <span style="font-family: monospace; font-size: 10px; letter-spacing: 2px; color: #AD56C4; text-transform: uppercase; font-weight: bold;">${isOtherQuestion ? "New General Inquiry / Others" : "New Assessment Booking"}</span>
   </div>
   
-  <p style="font-size: 14px; line-height: 1.6;">You have received a new level diagnostic assessment request. Below are the details of the student/parent:</p>
+  <p style="font-size: 14px; line-height: 1.6;">${isOtherQuestion ? "You have received a new general inquiry question." : "You have received a new level diagnostic assessment request."} Below are the details:</p>
   
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px;">
     <tr>
@@ -175,9 +189,15 @@ export async function sendGmailEmails(
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold; color: #AD56C4;">${referenceNumber}</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Student / Parent Name:</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Student Name:</td>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold; color: #23152B;">${data.name}</td>
     </tr>
+    ${(isOtherQuestion || data.parentName) ? `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Parent Name:</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); color: #23152B;">${data.parentName || "N/A"}</td>
+    </tr>
+    ` : ""}
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Email Address:</td>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1);"><a href="mailto:${visitorEmail}" style="color: #AD56C4; text-decoration: none;">${visitorEmail}</a></td>
@@ -190,6 +210,16 @@ export async function sendGmailEmails(
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Selected Course:</td>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold; color: #23152B;">${data.program}</td>
     </tr>
+    ${isOtherQuestion ? `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Preferred Date:</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); color: #23152B;">${data.preferredDate || (bookingDetails && bookingDetails.date) || "Not selected"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Preferred Time:</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); color: #23152B;">${data.preferredTime || (bookingDetails && bookingDetails.time) || "Not selected"}</td>
+    </tr>
+    ` : `
     ${bookingDetails ? `
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Assessment Date:</td>
@@ -206,9 +236,10 @@ export async function sendGmailEmails(
     </tr>
     ` : ""}
     ` : ""}
+    `}
     <tr>
-      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Language Challenges:</td>
-      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); color: #23152B; font-style: italic;">${data.message || "None specified"}</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">User Message:</td>
+      <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); color: #23152B; font-style: italic; white-space: pre-wrap;">${data.message || "None specified"}</td>
     </tr>
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid rgba(173,86,196,0.1); font-weight: bold;">Browser & OS:</td>
@@ -243,10 +274,13 @@ export async function sendGmailEmails(
     <p style="font-size: 15px; line-height: 1.6; font-weight: 500;">Dear ${data.name},</p>
     
     <p style="font-size: 14px; line-height: 1.6; color: #23152B;">
-      Thank you for requesting an English Assessment Session at the <strong>Shelly Sharma Academy</strong>. We are thrilled to accompany you on your path from hesitation to high-stakes eloquence.
+      ${isOtherQuestion 
+        ? `Thank you for reaching out to the <strong>Shelly Sharma Academy</strong>. We have received your inquiry regarding "Others" and we are pleased to help address your queries, requirements, or specialized training needs.`
+        : `Thank you for requesting an English Assessment Session at the <strong>Shelly Sharma Academy</strong>. We are thrilled to accompany you on your path from hesitation to high-stakes eloquence.`
+      }
     </p>
 
-    ${bookingDetails ? `
+    ${bookingDetails && !isOtherQuestion ? `
     <div style="background: linear-gradient(135deg, #FFF0F2 0%, #F5E6F7 100%); padding: 24px; border-radius: 24px; border: 2.5px solid #AD56C4; margin: 24px 0; text-align: center;">
       <span style="font-family: monospace; font-size: 10px; letter-spacing: 2px; color: #AD56C4; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 8px;">🎉 Assessment Session Confirmed</span>
       <h3 style="margin: 0 0 16px 0; font-family: Georgia, serif; color: #23152B; font-size: 18px; font-weight: bold;">Your Diagnostic Call is Reserved</h3>
@@ -282,7 +316,7 @@ export async function sendGmailEmails(
     </div>
     ` : `
     <p style="font-size: 14px; line-height: 1.6; color: #23152B;">
-      Your request has been received successfully. Our academic desk will review your details and contact you within <strong>24 business hours</strong> to finalize your diagnostic call coordinates.
+      Your ${isOtherQuestion ? "inquiry" : "request"} has been received successfully. Our academic desk will review your details and contact you within <strong>24 business hours</strong> to assist you further.
     </p>
 
     <div style="background-color: #FAF7F2; padding: 20px; border-radius: 20px; border: 1px solid rgba(173,86,196,0.1); margin: 24px 0;">
@@ -310,7 +344,7 @@ export async function sendGmailEmails(
 
     <div style="border-top: 1px solid rgba(173,86,196,0.15); padding-top: 20px; margin-top: 30px; font-size: 12px; line-height: 1.6; color: #666;">
       <p style="margin: 0 0 8px 0; font-weight: bold; color: #23152B;">Contact Desk Coordinates:</p>
-      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:mail.shelly.sharma@gmail.com" style="color: #AD56C4; text-decoration: none;">mail.shelly.sharma@gmail.com</a></p>
+      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:shellysharmamail@gmail.com" style="color: #AD56C4; text-decoration: none;">shellysharmamail@gmail.com</a></p>
       <p style="margin: 4px 0 0 0;">• <strong>Official Website:</strong> <a href="https://shellysharma.academy" style="color: #AD56C4; text-decoration: none;">shellysharma.academy</a></p>
     </div>
 
@@ -332,8 +366,11 @@ export async function sendGmailEmails(
       adminEmail,
       data.name,
       visitorEmail,
-      `New Assessment Request - ${data.name} (${referenceNumber})`,
-      adminHtml
+      isOtherQuestion 
+        ? "🔔 New General Inquiry Received" 
+        : `New Assessment Request - ${data.name} (${referenceNumber})`,
+      adminHtml,
+      isOtherQuestion
     );
     const adminRaw = btoa(unescape(encodeURIComponent(adminMime)))
       .replace(/\+/g, "-")
@@ -741,7 +778,7 @@ export async function sendRescheduledEmail(
     referenceId: string;
   }
 ): Promise<boolean> {
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "mail.shelly.sharma@gmail.com";
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "shellysharmamail@gmail.com";
   
   const htmlBody = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; border: 1px solid rgba(173,86,196,0.15); border-radius: 32px; background-color: #ffffff; color: #23152B; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
@@ -797,7 +834,7 @@ export async function sendRescheduledEmail(
 
     <div style="border-top: 1px solid rgba(173,86,196,0.15); padding-top: 20px; margin-top: 30px; font-size: 12px; line-height: 1.6; color: #666;">
       <p style="margin: 0 0 8px 0; font-weight: bold; color: #23152B;">Contact Desk Coordinates:</p>
-      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:mail.shelly.sharma@gmail.com" style="color: #AD56C4; text-decoration: none;">mail.shelly.sharma@gmail.com</a></p>
+      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:shellysharmamail@gmail.com" style="color: #AD56C4; text-decoration: none;">shellysharmamail@gmail.com</a></p>
       <p style="margin: 4px 0 0 0;">• <strong>Official Website:</strong> <a href="https://shellysharma.academy" style="color: #AD56C4; text-decoration: none;">shellysharma.academy</a></p>
     </div>
 
@@ -849,7 +886,7 @@ export async function sendCancelledEmail(
     referenceId: string;
   }
 ): Promise<boolean> {
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "mail.shelly.sharma@gmail.com";
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "shellysharmamail@gmail.com";
   
   const htmlBody = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; border: 1px solid rgba(220,38,38,0.15); border-radius: 32px; background-color: #ffffff; color: #23152B; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
@@ -898,7 +935,7 @@ export async function sendCancelledEmail(
 
     <div style="border-top: 1px solid rgba(220,38,38,0.15); padding-top: 20px; margin-top: 30px; font-size: 12px; line-height: 1.6; color: #666;">
       <p style="margin: 0 0 8px 0; font-weight: bold; color: #23152B;">Contact Desk Coordinates:</p>
-      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:mail.shelly.sharma@gmail.com" style="color: #AD56C4; text-decoration: none;">mail.shelly.sharma@gmail.com</a></p>
+      <p style="margin: 0;">• <strong>Official Email:</strong> <a href="mailto:shellysharmamail@gmail.com" style="color: #AD56C4; text-decoration: none;">shellysharmamail@gmail.com</a></p>
       <p style="margin: 4px 0 0 0;">• <strong>Official Website:</strong> <a href="https://shellysharma.academy" style="color: #AD56C4; text-decoration: none;">shellysharma.academy</a></p>
     </div>
 

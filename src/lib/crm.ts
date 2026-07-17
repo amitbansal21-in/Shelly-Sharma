@@ -1,5 +1,6 @@
-import { getAccessToken } from "./gmail";
+import { getAccessToken, sendGmailEmails } from "./gmail";
 import { triggerChatNewLead, triggerChatNotification } from "./chat";
+import { addSupabaseInquiry } from "./supabaseClient";
 
 export interface LeadSubmission {
   id?: string;
@@ -14,6 +15,7 @@ export interface LeadSubmission {
   parentName?: string;
   remarks?: string;
   status?: string;
+  otherQuery?: string;
 }
 
 const OFFLINE_QUEUE_KEY = "ss_crm_offline_leads";
@@ -243,52 +245,35 @@ function generateSequentialLeadId(existingIds: string[]): string {
   return `${prefix}${String(nextSeq).padStart(4, "0")}`;
 }
 
-// Push a lead directly to Google Sheets CRM
+// Push a lead directly to Google Sheets CRM (Now Supabase-First, One-Way Mirror to Sheets)
 export async function syncLeadToSheets(
   accessToken: string,
   lead: Omit<LeadSubmission, "id">
 ): Promise<string> {
   const spreadsheetId = await getOrCreateSpreadsheet(accessToken);
-  const existingIds = await fetchExistingLeadIds(accessToken, spreadsheetId);
-  const leadId = generateSequentialLeadId(existingIds);
+  
+  // Create in Supabase first (which acts as source of truth and generates sequential ID)
+  const mappedInquiryData = {
+    studentName: lead.name,
+    parentName: lead.parentName || "",
+    email: lead.email,
+    mobile: lead.phone,
+    inquiryType: lead.program,
+    selectedCourse: lead.program,
+    otherQuery: lead.program === "Others" ? (lead.otherQuery || lead.message || "") : "",
+    remarks: lead.remarks || lead.message || "",
+    status: (lead.status || "NEW LEAD") as any,
+    priority: "MEDIUM" as const,
+    leadSource: (lead.sourcePage === "Contact Page" ? "Website" : "Google") as any,
+    assignedCounselor: "Shelly Sharma",
+    createdBy: "System",
+    admissionStatus: "None" as const,
+  };
 
-  const dateObj = new Date();
-  const date = dateObj.toISOString().split("T")[0];
-  const time = dateObj.toTimeString().split(" ")[0];
+  const newInquiry = await addSupabaseInquiry(mappedInquiryData, accessToken, spreadsheetId);
+  const leadId = newInquiry.id;
 
-  const rowValues = [
-    leadId,
-    date,
-    time,
-    lead.name,
-    lead.parentName || "", // Parent Name (if available)
-    lead.email,
-    lead.phone,
-    lead.program,
-    "Online", // Preferred Mode (default)
-    lead.message || "",
-    lead.sourcePage || "Contact Page",
-    lead.status || "NEW LEAD", // Status (custom or default)
-    lead.remarks || "" // Remarks (if available)
-  ];
-
-  const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Leads!A:M:append?valueInputOption=USER_ENTERED`;
-  const appendRes = await fetch(appendUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      values: [rowValues]
-    })
-  });
-
-  if (!appendRes.ok) {
-    throw new Error(`Failed to append lead row: ${appendRes.statusText}`);
-  }
-
-  console.log(`Lead ${leadId} successfully written to Google Sheets CRM`);
+  console.log(`Lead ${leadId} successfully written to Supabase and mirrored to Google Sheets CRM`);
   
   // Trigger Google Chat notifications
   try {
@@ -319,14 +304,36 @@ export async function syncQueuedLeads(accessToken: string): Promise<void> {
   for (const lead of queue) {
     try {
       // Re-push using CRM sheets sync, which assigns proper sequential IDs
-      await syncLeadToSheets(accessToken, {
+      const leadId = await syncLeadToSheets(accessToken, {
         name: lead.name,
         email: lead.email,
         phone: lead.phone,
         program: lead.program,
         message: lead.message,
-        sourcePage: lead.sourcePage
+        sourcePage: lead.sourcePage || "Contact Page",
+        parentName: lead.parentName,
+        remarks: lead.remarks,
+        status: lead.status || "NEW LEAD",
+        otherQuery: lead.otherQuery
       });
+
+      // Trigger automatic Gmail notification on synchronization
+      try {
+        await sendGmailEmails(accessToken, {
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          program: lead.program,
+          message: lead.otherQuery || lead.message || "",
+          parentName: lead.parentName,
+          remarks: lead.remarks,
+          preferredDate: lead.date,
+          preferredTime: lead.time,
+          otherQuery: lead.otherQuery
+        }, leadId);
+      } catch (emailError) {
+        console.error(`Failed to dispatch automatic email notification during sync for lead ${leadId}:`, emailError);
+      }
     } catch (error) {
       console.error(`Failed to sync queued lead ${lead.id}:`, error);
       remaining.push(lead); // Keep in queue for next attempt

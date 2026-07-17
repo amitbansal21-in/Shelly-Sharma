@@ -32,8 +32,10 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
     parentName: "",
     remarks: "",
     preferredDate: "",
-    preferredTime: ""
+    preferredTime: "",
+    otherQuery: ""
   });
+  const [otherQueryError, setOtherQueryError] = useState<string | null>(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [bookedMeetUrl, setBookedMeetUrl] = useState<string | null>(null);
 
@@ -71,7 +73,16 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "otherQuery") {
+      setOtherQueryError(null);
+    }
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === "program" && value !== "Others") {
+        updated.otherQuery = "";
+      }
+      return updated;
+    });
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -80,6 +91,28 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
 
     setIsSubmitting(true);
     setSlotCheckError(null);
+
+    // Validate Other Query field if Others is selected
+    if (formData.program === "Others") {
+      const q = formData.otherQuery ? formData.otherQuery.trim() : "";
+      if (!q) {
+        setOtherQueryError("What would you like to discuss? is required.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (q.length < 10) {
+        setOtherQueryError("Minimum 10 characters are required.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (q.length > 1000) {
+        setOtherQueryError("Maximum 1000 characters allowed.");
+        setIsSubmitting(false);
+        return;
+      }
+      setOtherQueryError(null);
+    }
+
     let finalRefNum = "";
 
     try {
@@ -128,11 +161,12 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
             email: formData.email,
             phone: formData.phone,
             program: formData.program,
-            message: formData.message,
+            message: formData.program === "Others" ? formData.otherQuery : formData.message,
             sourcePage: "Contact Page",
             parentName: formData.parentName,
             remarks: formData.remarks,
-            status: leadStatus
+            status: leadStatus,
+            otherQuery: formData.otherQuery
           });
         } catch (crmError) {
           console.error("Sheets CRM sync failed, queueing locally:", crmError);
@@ -141,11 +175,12 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
             email: formData.email,
             phone: formData.phone,
             program: formData.program,
-            message: formData.message,
+            message: formData.program === "Others" ? formData.otherQuery : formData.message,
             sourcePage: "Contact Page",
             parentName: formData.parentName,
             remarks: formData.remarks,
-            status: leadStatus
+            status: leadStatus,
+            otherQuery: formData.otherQuery
           });
         }
       } else {
@@ -155,11 +190,12 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
           email: formData.email,
           phone: formData.phone,
           program: formData.program,
-          message: formData.message,
+          message: formData.program === "Others" ? formData.otherQuery : formData.message,
           sourcePage: "Contact Page",
           parentName: formData.parentName,
           remarks: formData.remarks,
-          status: leadStatus
+          status: leadStatus,
+          otherQuery: formData.otherQuery
         });
       }
 
@@ -235,7 +271,12 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
           email: formData.email,
           phone: formData.phone,
           program: formData.program,
-          message: formData.message
+          message: formData.program === "Others" ? formData.otherQuery : formData.message,
+          parentName: formData.parentName,
+          remarks: formData.remarks,
+          preferredDate: finalDate,
+          preferredTime: finalTime,
+          otherQuery: formData.otherQuery
         }, finalRefNum, bookingDetails);
         setSubmitSuccessType("gmail");
       } else {
@@ -362,8 +403,8 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
               </div>
               <div>
                 <h4 className="text-xs font-bold tracking-wider uppercase text-[#FF8DA1] font-mono">Official Email Channel</h4>
-                <a href="mailto:mail.shelly.sharma@gmail.com" className="text-sm font-bold text-[#23152B] hover:text-[#AD56C4] mt-0.5 block transition-colors duration-200">
-                  mail.shelly.sharma@gmail.com
+                <a href="mailto:shellysharmamail@gmail.com" className="text-sm font-bold text-[#23152B] hover:text-[#AD56C4] mt-0.5 block transition-colors duration-200">
+                  shellysharmamail@gmail.com
                 </a>
               </div>
             </div>
@@ -403,118 +444,218 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
         <div className="lg:col-span-7">
           <div className="bg-white border border-[#AD56C4]/15 rounded-[32px] p-8 shadow-xl relative overflow-hidden">
             {formSubmitted ? (
-              <div className="py-16 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-[#AD56C4]/10 text-[#AD56C4] flex items-center justify-center">
-                  <CheckCircle size={36} />
-                </div>
-                {formData.preferredDate && formData.preferredTime ? (
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <h3 className="font-display text-2xl font-black text-[#23152B] tracking-tight">
-                        🎉 Assessment Successfully Booked
+              formData.program === "Others" ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="py-12 flex flex-col items-center justify-center text-center space-y-8"
+                >
+                  {/* Glowing Floating Icon */}
+                  <div className="relative">
+                    <motion.div
+                      animate={{ scale: [1, 1.08, 1], rotate: [0, 5, -5, 0] }}
+                      transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                      className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#AD56C4] to-[#FF8DA1] text-white flex items-center justify-center shadow-xl shadow-[#AD56C4]/30 relative z-10 animate-fade-in"
+                    >
+                      <CheckCircle size={38} className="animate-pulse" />
+                    </motion.div>
+                    <div className="absolute inset-0 rounded-full border border-[#AD56C4]/40 animate-ping opacity-25" />
+                    <div className="absolute -top-1 -right-1 bg-[#FF8DA1] text-white p-1.5 rounded-full border-2 border-white shadow-md animate-bounce">
+                      <Sparkles size={12} />
+                    </div>
+                  </div>
+
+                  {/* Message details */}
+                  <div className="space-y-4 max-w-lg mx-auto px-4">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="space-y-2"
+                    >
+                      <h3 className="font-display text-4xl font-black text-[#23152B] tracking-tight leading-tight pt-2">
+                        Thank You!
                       </h3>
-                      <p className="text-sm text-[#AD56C4] font-mono font-bold uppercase tracking-wider">
-                        Reference ID: {referenceNumber}
+                      <p className="text-sm font-semibold text-[#AD56C4]">
+                        Your inquiry has been received successfully.
                       </p>
-                    </div>
+                    </motion.div>
 
-                    <div className="text-sm text-[#23152B]/85 space-y-3 max-w-md mx-auto leading-relaxed">
-                      <p>Your assessment session has been successfully scheduled for <strong>{formData.preferredDate}</strong> at <strong>{formData.preferredTime}</strong>.</p>
-                      <p>A confirmation email has been sent.</p>
-                      <p>A Google Meet invitation has also been generated.</p>
-                      <p className="font-semibold text-[#23152B]">Please join the meeting using the button below.</p>
-                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="bg-gradient-to-br from-[#FAF7F2] to-[#FDF4FA] border border-[#AD56C4]/15 rounded-2xl p-6 text-sm text-[#23152B]/85 shadow-inner leading-relaxed space-y-3 text-left"
+                    >
+                      <p className="font-serif italic text-base text-[#23152B]">
+                        Dear {formData.name},
+                      </p>
+                      <p>
+                        Our team will review your message and contact you shortly.
+                      </p>
+                      <p>
+                        We have successfully bypass-routed your inquiry to Shelly Sharma's personal desk. Because you have selected <strong>"Others"</strong>, we are treating this as a high-priority unique dialogue rather than a standard assessment booking.
+                      </p>
+                      <p className="text-[#AD56C4] font-semibold">
+                        Estimated Response Time: Within 24 Business Hours.
+                      </p>
+                    </motion.div>
 
-                    <div className="flex flex-col gap-3 pt-4 w-full justify-center max-w-sm mx-auto">
-                      {bookedMeetUrl && (
-                        <a
-                          href={bookedMeetUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="w-full px-6 py-3 bg-[#AD56C4] hover:bg-[#9642AB] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2 shadow-lg shadow-[#AD56C4]/20"
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="text-xs font-mono text-[#AD56C4]/80 flex items-center justify-center gap-1.5"
+                    >
+                      <span className="inline-block w-2 h-2 rounded-full bg-[#AD56C4] animate-ping" />
+                      Reference ID: <strong className="font-bold">{referenceNumber}</strong>
+                    </motion.div>
+                  </div>
+
+                  {/* Buttons */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center max-w-md pt-4"
+                  >
+                    <button
+                      onClick={() => {
+                        if (onNavigateToPage) {
+                          onNavigateToPage("home");
+                        } else {
+                          onHomeClick();
+                        }
+                      }}
+                      className="w-full sm:w-auto px-8 py-3.5 bg-[#23152B] hover:bg-[#AD56C4] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95 cursor-pointer"
+                    >
+                      Return to Home
+                    </button>
+                    <a
+                      href="https://wa.me/919876543210"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-8 py-3.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95 text-center cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      Contact on WhatsApp
+                    </a>
+                  </motion.div>
+                </motion.div>
+              ) : (
+                <div className="py-16 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
+                  <div className="w-16 h-16 rounded-full bg-[#AD56C4]/10 text-[#AD56C4] flex items-center justify-center">
+                    <CheckCircle size={36} />
+                  </div>
+                  {formData.preferredDate && formData.preferredTime ? (
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <h3 className="font-display text-2xl font-black text-[#23152B] tracking-tight">
+                          🎉 Assessment Successfully Booked
+                        </h3>
+                        <p className="text-sm text-[#AD56C4] font-mono font-bold uppercase tracking-wider">
+                          Reference ID: {referenceNumber}
+                        </p>
+                      </div>
+
+                      <div className="text-sm text-[#23152B]/85 space-y-3 max-w-md mx-auto leading-relaxed">
+                        <p>Your assessment session has been successfully scheduled for <strong>{formData.preferredDate}</strong> at <strong>{formData.preferredTime}</strong>.</p>
+                        <p>A confirmation email has been sent.</p>
+                        <p>A Google Meet invitation has also been generated.</p>
+                        <p className="font-semibold text-[#23152B]">Please join the meeting using the button below.</p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 pt-4 w-full justify-center max-w-sm mx-auto">
+                        {bookedMeetUrl && (
+                          <a
+                            href={bookedMeetUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full px-6 py-3 bg-[#AD56C4] hover:bg-[#9642AB] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2 shadow-lg shadow-[#AD56C4]/20"
+                          >
+                            Join Google Meet
+                          </a>
+                        )}
+                        
+                        <button
+                          onClick={() => downloadCalendarInvite({
+                            studentName: formData.name,
+                            course: formData.program,
+                            date: formData.preferredDate,
+                            time: formData.preferredTime,
+                            meetUrl: bookedMeetUrl,
+                            referenceId: referenceNumber
+                          })}
+                          className="w-full px-6 py-3 bg-white border border-[#AD56C4]/40 hover:bg-[#AD56C4]/5 text-[#AD56C4] text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2"
                         >
-                          Join Google Meet
-                        </a>
-                      )}
+                          Download Calendar Invite
+                        </button>
+
+                        <button
+                          onClick={() => onNavigateToPage?.("home")}
+                          className="w-full px-6 py-3 bg-[#23152B] hover:bg-black text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2"
+                        >
+                          Back to Home
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-6">
+                      <div className="space-y-3 text-center">
+                        <h3 className="font-display text-2xl font-bold text-[#23152B]">
+                          Request Received Successfully
+                        </h3>
+                        {submitSuccessType === "gmail" ? (
+                          <p className="text-sm text-[#23152B]/85 max-w-md leading-relaxed">
+                            Thank you for contacting Shelly Sharma Academy. A confirmation email has been sent to your inbox (<strong>{formData.email}</strong>) with reference number <strong>{referenceNumber}</strong>. Our team will contact you shortly.
+                          </p>
+                        ) : (
+                          <p className="text-sm text-[#23152B]/85 max-w-md leading-relaxed">
+                            We received your request successfully. Our team will contact you shortly.
+                          </p>
+                        )}
+                      </div>
                       
-                      <button
-                        onClick={() => downloadCalendarInvite({
-                          studentName: formData.name,
-                          course: formData.program,
-                          date: formData.preferredDate,
-                          time: formData.preferredTime,
-                          meetUrl: bookedMeetUrl,
-                          referenceId: referenceNumber
-                        })}
-                        className="w-full px-6 py-3 bg-white border border-[#AD56C4]/40 hover:bg-[#AD56C4]/5 text-[#AD56C4] text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2"
-                      >
-                        Download Calendar Invite
-                      </button>
+                      <span className="text-xs font-mono text-[#AD56C4] bg-[#AD56C4]/10 px-4 py-1.5 rounded-full font-bold">
+                        {submitSuccessType === "gmail" 
+                          ? `Status: Automated Email Sent (${referenceNumber})` 
+                          : "Status: Request Queued Successfully"}
+                      </span>
 
-                      <button
-                        onClick={() => onNavigateToPage?.("home")}
-                        className="w-full px-6 py-3 bg-[#23152B] hover:bg-black text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 text-center flex items-center justify-center gap-2"
-                      >
-                        Back to Home
-                      </button>
+                      <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full justify-center">
+                        <button
+                          onClick={() => onNavigateToPage?.("home")}
+                          className="w-full sm:w-auto px-6 py-3 bg-[#23152B] hover:bg-[#AD56C4] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer"
+                        >
+                          Return Home
+                        </button>
+                        <button
+                          onClick={() => {
+                            setFormData({
+                              name: "",
+                              email: "",
+                              phone: "",
+                              program: preselectedProgram || "Elite Spoken English Mastery",
+                              message: "",
+                              parentName: "",
+                              remarks: "",
+                              preferredDate: "",
+                              preferredTime: ""
+                            });
+                            setFormSubmitted(false);
+                            setIsSubmittingDuplicate(false);
+                            setSubmitSuccessType(null);
+                            setSlotSuggestion(null);
+                          }}
+                          className="w-full sm:w-auto px-6 py-3 border border-[#AD56C4]/35 text-[#AD56C4] hover:bg-[#AD56C4]/5 text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer"
+                        >
+                          Book Another Assessment
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center space-y-6">
-                    <div className="space-y-3 text-center">
-                      <h3 className="font-display text-2xl font-bold text-[#23152B]">
-                        Request Received Successfully
-                      </h3>
-                      {submitSuccessType === "gmail" ? (
-                        <p className="text-sm text-[#23152B]/85 max-w-md leading-relaxed">
-                          Thank you for contacting Shelly Sharma Academy. A confirmation email has been sent to your inbox (<strong>{formData.email}</strong>) with reference number <strong>{referenceNumber}</strong>. Our team will contact you shortly.
-                        </p>
-                      ) : (
-                        <p className="text-sm text-[#23152B]/85 max-w-md leading-relaxed">
-                          We received your request successfully. Our team will contact you shortly.
-                        </p>
-                      )}
-                    </div>
-                    
-                    <span className="text-xs font-mono text-[#AD56C4] bg-[#AD56C4]/10 px-4 py-1.5 rounded-full font-bold">
-                      {submitSuccessType === "gmail" 
-                        ? `Status: Automated Email Sent (${referenceNumber})` 
-                        : "Status: Request Queued Successfully"}
-                    </span>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full justify-center">
-                      <button
-                        onClick={() => onNavigateToPage?.("home")}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#23152B] hover:bg-[#AD56C4] text-white text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer"
-                      >
-                        Return Home
-                      </button>
-                      <button
-                        onClick={() => {
-                          setFormData({
-                            name: "",
-                            email: "",
-                            phone: "",
-                            program: preselectedProgram || "Elite Spoken English Mastery",
-                            message: "",
-                            parentName: "",
-                            remarks: "",
-                            preferredDate: "",
-                            preferredTime: ""
-                          });
-                          setFormSubmitted(false);
-                          setIsSubmittingDuplicate(false);
-                          setSubmitSuccessType(null);
-                          setSlotSuggestion(null);
-                        }}
-                        className="w-full sm:w-auto px-6 py-3 border border-[#AD56C4]/35 text-[#AD56C4] hover:bg-[#AD56C4]/5 text-xs font-mono font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer"
-                      >
-                        Book Another Assessment
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )
             ) : (
               <form onSubmit={handleFormSubmit} className="space-y-6">
                 <h3 className="font-display text-2xl font-bold text-[#23152B]">
@@ -591,9 +732,37 @@ export default function ContactPage({ onHomeClick, preselectedProgram = "", onNa
                       <option>Corporate English & Executive Speech</option>
                       <option>ICSE / CBSE Academic Board Prep</option>
                       <option>Personality & Presentation Skills</option>
+                      <option>Others</option>
                     </select>
                   </div>
                 </div>
+
+                {formData.program === "Others" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -10, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden space-y-2"
+                  >
+                    <label htmlFor="otherQuery" className="block text-xs font-mono font-bold uppercase tracking-wider text-[#23152B]/80 mb-2">
+                      What would you like to discuss? <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      id="otherQuery"
+                      name="otherQuery"
+                      rows={4}
+                      value={formData.otherQuery || ""}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      placeholder="Please describe your query, requirement or message..."
+                      className="w-full px-4 py-3 bg-[#FAFAFA] border border-[#AD56C4]/20 rounded-xl focus:ring-2 focus:ring-[#AD56C4] focus:border-transparent focus:outline-none text-sm transition-all duration-300 disabled:opacity-55"
+                    />
+                    {otherQueryError && (
+                      <p className="text-xs text-red-500 font-mono mt-1">{otherQueryError}</p>
+                    )}
+                  </motion.div>
+                )}
 
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
